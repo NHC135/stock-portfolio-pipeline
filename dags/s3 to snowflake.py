@@ -9,9 +9,9 @@ from datetime import datetime, timedelta
 # env variables
 load_dotenv()
 
-BUCKET= "bronze-transactions"
-TABLE= "bronze_stock_quotes_raw"
-LOCAL_DIR= "/tmp/minio_downloads" # abs path for Airflow 
+BUCKET="bronzestock"
+TABLE="bronze_stock_quotes_raw"
+LOCAL_DIR="/tmp/minio_downloads" # abs path for Airflow 
 
 # =================================
 # getting data from s3 bucket
@@ -19,23 +19,22 @@ LOCAL_DIR= "/tmp/minio_downloads" # abs path for Airflow
 def download_from_minio(): 
     os.makedirs(LOCAL_DIR, exist_ok=True)
     s3 = boto3.client( 
-        "s3", 
+        "s3",
         endpoint_url=os.environ["MINIO_ENDPOINT"],
-        aws_access_key_id=os.environ["MINIO_USER"], 
-        aws_secret_access_key=os.environ["MINIO_PASSWORD"]
+        aws_access_key_id=os.environ["MINIO_ROOT_USER"],
+        aws_secret_access_key=os.environ["MINIO_ROOT_PASSWORD"],
     )
 
-    objects = s3.list_objects_v2(Bucket=BUCKET).get("Contents",[])
     local_files = [] 
     paginator = s3.get_paginator("list_objects_v2")
     for page in paginator.paginate(Bucket=BUCKET):
-        for obj in page.get("contents", []):  
+        for obj in page.get("Contents", []):
             key = obj["Key"]
             local_file = os.path.join(LOCAL_DIR, os.path.basename(key))
             s3.download_file(BUCKET, key, local_file)
             print(f"Downloaded {key} => {local_file}")
             local_files.append(local_file)
-        return local_files
+    return local_files
 
 # ====================================
 # load the files onto snowflake DW
@@ -50,7 +49,7 @@ def load_to_snowflake(**kwargs):
         user=os.environ["SNOWFLAKE_USER"],
         password=os.environ["SNOWFLAKE_PASSWORD"],
         account=os.environ["SNOWFLAKE_ACCOUNT"],
-        warehouse=os.os.environ["SNOWFLAKE_WAREHOUSE"],
+        warehouse=os.environ["SNOWFLAKE_WAREHOUSE"],
         database=os.environ["SNOWFLAKE_DB"],
         schema=os.environ["SNOWFLAKE_SCHEMA"]
     ) 
@@ -58,7 +57,7 @@ def load_to_snowflake(**kwargs):
     try: 
         with conn.cursor() as cur:  
             for f in local_files: 
-                cur.execute(f"PUT file://{f} @%bronze_stock_quotes_raw")
+                cur.execute(f"PUT 'file://{f}' @%bronze_stock_quotes_raw")
                 print(f"Uploaded {f} to Snowflake stage")
 
             cur.execute(""" 
