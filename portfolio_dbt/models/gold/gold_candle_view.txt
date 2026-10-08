@@ -1,0 +1,48 @@
+WITH enriched_candle AS (
+    SELECT 
+        ticker, 
+        CAST(market_timestamp AS date) as market_timestamp,
+        FIRST_VALUE(current_price) OVER(
+            PARTITION BY ticker, CAST(market_timestamp AS date) 
+            ORDER BY market_timestamp 
+            ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+        ) AS candle_open, 
+        LAST_VALUE(current_price) OVER(
+            PARTITION BY ticker, CAST(market_timestamp AS date) 
+            ORDER BY market_timestamp 
+            ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+        ) AS candle_close
+    FROM {{ ref('silver_clean_stock_quotes.sql') }}
+), 
+
+candle_stick AS ( 
+    SELECT 
+        ticker, 
+        market_timestamp AS candle_timestamp, 
+        min(day_low) AS candle_low, 
+        max(day_high) AS candle_high, 
+        any_value(candle_open) AS candle_open, 
+        any_value(candle_close) AS candle_close, 
+        avg(current_price) AS trend_line
+    FROM enriched
+    GROUP BY ticker, market_timestamp
+),
+
+ranked AS (
+    SELECT 
+        *, 
+        row_number() OVER(PARTITION BY ticker ORDER BY candle_time DESC) AS rank
+    FROM candles_stick 
+)
+
+SELECT 
+    ticker, 
+    candle_time, 
+    candle_low, 
+    candle_high,
+    candle_open,
+    candle_close,
+    trend_line
+FROM ranked 
+WHERE ranked <= 12 
+ORDER BY ticker, candle_time
