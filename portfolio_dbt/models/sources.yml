@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: raw
+    database: STOCKDB
+    schema: STOCK_PRICES
+    tables:
+      - name: bronze_stock_quotes_raw

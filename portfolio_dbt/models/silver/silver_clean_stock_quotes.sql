@@ -8,5 +8,5 @@ SELECT
     ROUND(prev_close, 2) AS prev_close,
     market_timestamp, 
     fetched_at
-FROM {{ ref{'bronze_stock_quotes'} }}
+FROM {{ ref('stg_bronze_stock_quotes') }}
 WHERE current_price IS NOT NULL 

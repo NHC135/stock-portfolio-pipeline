@@ -9,4 +9,4 @@ SELECT
     v:pc::float AS prev_close, 
     v:t::timestamp AS market_timestamp, 
     v:fetched_at::timestamp AS fetched_at
-FROM {{source{'raw', 'bronze_stock_quotes_raw'}}}
+FROM {{ source('raw', 'bronze_stock_quotes_raw') }}

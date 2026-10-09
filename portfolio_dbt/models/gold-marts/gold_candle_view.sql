@@ -12,7 +12,7 @@ WITH enriched_candle AS (
             ORDER BY market_timestamp 
             ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
         ) AS candle_close
-    FROM {{ ref('silver_clean_stock_quotes.sql') }}
+    FROM {{ ref('silver_clean_stock_quotes') }}
 ), 
 
 candle_stick AS ( 
