@@ -10,7 +10,7 @@ load_dotenv()
 api_key = os.environ["api_key"]
 base_url = "https://finnhub.io/api/v1/quote"
 
-stock_list = ['TSLA', 'NVDA', 'TSMC', 'SPY', 'CME']
+stock_list = ['TSLA', 'NVDA', 'TSM', 'SPY', 'CME']
 
 # kafka connection: initial producer
 producer = KafkaProducer ( 
