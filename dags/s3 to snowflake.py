@@ -1,13 +1,9 @@
 import os 
 import boto3
-from dotenv import load_dotenv
 import snowflake.connector
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
-
-# env variables
-load_dotenv()
 
 BUCKET="bronzestock"
 TABLE="bronze_stock_quotes_raw"
@@ -25,16 +21,16 @@ def download_from_minio():
         aws_secret_access_key=os.environ["MINIO_ROOT_PASSWORD"],
     )
 
-    local_files = [] 
+    local_files = []
     paginator = s3.get_paginator("list_objects_v2")
     for page in paginator.paginate(Bucket=BUCKET):
         for obj in page.get("Contents", []):
-            key = obj["Key"]
+            key = obj["Key"] 
             local_file = os.path.join(LOCAL_DIR, os.path.basename(key))
             s3.download_file(BUCKET, key, local_file)
             print(f"Downloaded {key} => {local_file}")
             local_files.append(local_file)
-    return local_files
+    return local_files 
 
 # ====================================
 # load the files onto snowflake DW
@@ -57,12 +53,12 @@ def load_to_snowflake(**kwargs):
     try: 
         with conn.cursor() as cur:  
             for f in local_files: 
-                cur.execute(f"PUT 'file://{f}' @%bronze_stock_quotes_raw")
+                cur.execute(f"PUT 'file://{f}' @%{TABLE}")
                 print(f"Uploaded {f} to Snowflake stage")
 
-            cur.execute(""" 
-                COPY INTO bronze_stock_quotes_raw 
-                FROM @%bronze_stock_quotes_raw 
+            cur.execute(f""" 
+                COPY INTO {TABLE}
+                FROM @%{TABLE}
                 FILE_FORMAT = (TYPE=JSON)
             """)
             print("COPY INTO executed", cur.fetchall())
@@ -97,7 +93,6 @@ with DAG(
     task2= PythonOperator( 
         task_id="load_snowflake",
         python_callable=load_to_snowflake, 
-        provide_context=True,
     )
 
     task1 >> task2
