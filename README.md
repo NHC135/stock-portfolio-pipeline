@@ -4,9 +4,10 @@ An end-to-end data pipeline that streams live stock quotes from the Finnhub API 
 
 **Tickers tracked:** TSLA, NVDA, TSM, CME, and SPY (S&P 500 ETF, used as a market benchmark).
 
-<!-- Add a dashboard screenshot here once it's finished:
-![Dashboard](docs/dashboard.png)
--->
+<img width="839" height="490" alt="image" src="https://github.com/user-attachments/assets/b5434ed9-2ac7-4926-be17-53c16d09cedb" />
+
+
+*[View the full dashboard as a PDF](docs/dashboard.pdf)*
 
 ---
 
