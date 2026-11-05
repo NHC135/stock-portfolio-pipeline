@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: stg_bronze_stock_quotes
+    description: "Raw JSON parsed into typed columns. One row per quote."
+    columns:
+      - name: ticker
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['TSLA', 'NVDA', 'TSM', 'SPY', 'CME']
+      - name: fetched_at
+        data_tests:
+          - not_null

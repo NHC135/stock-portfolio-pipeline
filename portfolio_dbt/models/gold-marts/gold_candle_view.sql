@@ -6,12 +6,12 @@ WITH enriched_candle AS (
         day_high,
         day_low,
         FIRST_VALUE(current_price) OVER(
-            PARTITION BY ticker, CAST(market_timestamp AS date)
+            PARTITION BY ticker, DATE_TRUNC('hour', market_timestamp)
             ORDER BY market_timestamp
             ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
         ) AS candle_open,
         LAST_VALUE(current_price) OVER(
-            PARTITION BY ticker, CAST(market_timestamp AS date)
+            PARTITION BY ticker, DATE_TRUNC('hour', market_timestamp)
             ORDER BY market_timestamp
             ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
         ) AS candle_close

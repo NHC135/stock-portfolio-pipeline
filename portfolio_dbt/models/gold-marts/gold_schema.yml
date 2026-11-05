@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: gold_kpi_view
+    description: "Latest quote per ticker."
+    columns:
+      - name: ticker
+        data_tests:
+          - not_null
+          - unique              # exactly one row per ticker
+          - relationships:      # every ticker here must exist in silver
+              arguments:
+                to: ref('silver_clean_stock_quotes')
+                field: ticker
+      - name: current_price
+        data_tests:
+          - not_null
+
+  - name: gold_volatility_view
+    description: "Latest-day average price and volatility per ticker."
+    columns:
+      - name: ticker
+        data_tests:
+          - not_null
+          - unique
+
+  - name: gold_candle_view
+    description: "Last 12 hourly candles per ticker."
+    columns:
+      - name: ticker
+        data_tests:
+          - not_null
+      - name: candle_time
+        data_tests:
+          - not_null

@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: silver_clean_stock_quotes
+    description: "Cleaned quotes: null prices removed, values rounded."
+    columns:
+      - name: ticker
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['TSLA', 'NVDA', 'TSM', 'SPY', 'CME']
+      - name: current_price
+        data_tests:
+          - not_null
+      - name: market_timestamp
+        data_tests:
+          - not_null
+      - name: fetched_at
+        data_tests:
+          - not_null
