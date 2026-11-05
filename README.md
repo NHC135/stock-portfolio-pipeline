@@ -211,6 +211,7 @@ dbt build                        # runs models and tests
 - **Environment variables in Docker.** Airflow couldn't see `.env` until it was passed in with `env_file`. Containers have to be recreated (`down` / `up`), not just restarted, to pick up changes.
 - **Snowflake authentication.** Repeated failed logins from a DAG scheduled every minute locked the account. I learned to test the connection once by hand, pause the DAG while debugging, and use `LOGIN_HISTORY` to find the real cause.
 - **After-hours duplicates.** Finnhub repeats the same market timestamp when the market is closed, which inflated row counts and distorted candles. Fixed at the source by filtering duplicates in the producer.
+- **Ticker spelling mistake.** Wrote the wrong ticker symbol and the API returned null values, fix or added data quality checks for nulls using dbt tests.
 - **Silent data loss risks.** Auto-committing Kafka offsets could lose messages if a write failed, and non-unique file names could overwrite each other. Fixed with manual commits and deterministic, ticker-specific file names.
 
 ---
