@@ -47,3 +47,6 @@ airflow-webserver.pid
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# dbt profile uses env_var() only, safe to commit
+!portfolio_dbt/profiles.yml
