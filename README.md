@@ -14,18 +14,6 @@ An end-to-end data pipeline that streams live stock quotes from the Finnhub API 
 
 ![Architecture](docs/architecture.png)
 
-```mermaid
-flowchart LR
-    A[Finnhub API] -->|every 7s| B[producer.py]
-    B -->|JSON, keyed by ticker| C[(Kafka<br/>stock-quotes)]
-    C --> D[consumer.py]
-    D -->|one JSON file per quote| E[(MinIO<br/>bronzestock bucket)]
-    E --> F[Airflow DAG]
-    F -->|PUT + COPY INTO| G[(Snowflake<br/>bronze table)]
-    G --> H[dbt<br/>stg → silver → gold]
-    H --> I[Power BI dashboard]
-```
-
 | Layer | Tool | Role |
 |---|---|---|
 | Ingestion | Python, `requests` | Polls Finnhub for quotes |
