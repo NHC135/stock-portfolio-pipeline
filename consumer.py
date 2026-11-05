@@ -1,6 +1,5 @@
 import os 
 import json 
-import time 
 import logging
 from datetime import datetime, timezone
 
@@ -27,6 +26,7 @@ TOPIC = os.getenv("KAFKA_TOPIC", "stock-quotes")
 # =====================================
 s3 = boto3.client(
     "s3",
+    region_name="us-east-1",
     endpoint_url = MINIO_ENDPOINT,
     aws_access_key_id= os.environ["MINIO_ROOT_USER"],
     aws_secret_access_key= os.environ["MINIO_ROOT_PASSWORD"],
@@ -67,20 +67,19 @@ def object_key(record):
     symbol = record["symbol"]
     t = int(record["t"])
     day = datetime.fromtimestamp(t, tz=timezone.utc).strftime("%Y-%m-%d")
-    return f"{symbol}/{day}/{symbol}_{t}"               # e.g. TSLA/2026-10-13/TSLA_1791576000.json
+    return f"{symbol}/{day}/{symbol}_{t}.json"               # e.g. TSLA/2026-10-13/TSLA_1791576000.json
 
 # ================================
 # kafka 
 # ================================
 
 consumer = KafkaConsumer(
-    "stock-quotes",
+    TOPIC,
     bootstrap_servers=KAFKA_SERVERS,
     group_id="bronze-consumer",
-    enable_auto_commit=True, 
+    enable_auto_commit=False, 
     auto_offset_reset = "earliest",
-    group_id="bronze-consumer",
-    value_deserializer= safe_json()
+    value_deserializer= safe_json
 )
 
 ensure_bucket() 
@@ -100,11 +99,11 @@ try:
         s3.put_object( 
             Bucket=BUCKET, 
             Key=key, 
-            Body=json.dumps(record)
+            Body=json.dumps(record),
             ContentType="application/json"
         )
         consumer.commit() 
-        log.info("Saved %s -> s3://%s/%s", record["Symbol"], BUCKET, key)
+        log.info("Saved %s -> s3://%s/%s", record["symbol"], BUCKET, key)
 
 except KeyboardInterrupt: 
     log.info("Stopping consumer...")
